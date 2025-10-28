@@ -2,21 +2,23 @@ import React, { useState } from 'react';
 
 interface ExitRatingModalProps {
   onClose: () => void;
-  onSubmit: (recommendationRating: number, exhibitionRating: number) => void;
+  onSubmit: (exhibitionRating: number, mapHelpfulness: number) => void;
 }
 
 const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) => {
   const [exhibitionRating, setExhibitionRating] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mapHelpfulness, setMapHelpfulness] = useState<number>(0);
 
   const handleSubmit = async () => {
-    if (exhibitionRating === 0) {
+
+    if (exhibitionRating === 0 || mapHelpfulness === 0) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await onSubmit(0, exhibitionRating);
+      await onSubmit(exhibitionRating, mapHelpfulness);
     } catch (error) {
       console.error('별점 제출 오류:', error);
     } finally {
@@ -24,7 +26,7 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
     }
   };
 
-  const isSubmitEnabled = exhibitionRating > 0;
+  const isSubmitEnabled = exhibitionRating > 0 && mapHelpfulness > 0;
 
   return (
     <div className="exit-rating-modal-overlay">
@@ -40,7 +42,7 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
             <h3>전시회에 전반적으로 얼마나 만족하셨나요?</h3>
             <div className="rating-container">
               <div className="rating-stars">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5, 6, 7].map((star) => (
                   <span
                     key={star}
                     className={`star ${star <= exhibitionRating ? 'active' : ''}`}
@@ -55,9 +57,40 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
               <div className="rating-feedback">
                 {exhibitionRating === 1 && "매우 불만족"}
                 {exhibitionRating === 2 && "불만족"}
-                {exhibitionRating === 3 && "보통"}
-                {exhibitionRating === 4 && "만족"}
-                {exhibitionRating === 5 && "매우 만족"}
+                {exhibitionRating === 3 && "약간 불만족"}
+                {exhibitionRating === 4 && "보통"}
+                {exhibitionRating === 5 && "약간 만족"}
+                {exhibitionRating === 6 && "만족"}
+                {exhibitionRating === 7 && "매우 만족"}
+              </div>
+            )}
+          </div>
+
+          {/* 지도 기능 도움 정도 */}
+          <div className="rating-section">
+            <h3>지도 기능이 도움이 되었나요?</h3>
+            <div className="rating-container">
+              <div className="rating-stars">
+                {[1, 2, 3, 4, 5, 6, 7].map((star) => (
+                  <span
+                    key={star}
+                    className={`star ${star <= mapHelpfulness ? 'active' : ''}`}
+                    onClick={() => setMapHelpfulness(star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+            {mapHelpfulness > 0 && (
+              <div className="rating-feedback">
+                {mapHelpfulness === 1 && "전혀 도움 안됨"}
+                {mapHelpfulness === 2 && "거의 도움 안됨"}
+                {mapHelpfulness === 3 && "조금 도움 안됨"}
+                {mapHelpfulness === 4 && "보통"}
+                {mapHelpfulness === 5 && "조금 도움됨"}
+                {mapHelpfulness === 6 && "도움됨"}
+                {mapHelpfulness === 7 && "매우 도움됨"}
               </div>
             )}
           </div>
@@ -143,7 +176,7 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
 
           .rating-section h3 {
             color: #333;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             margin: 0 0 4px 0;
             text-align: center;
@@ -159,7 +192,9 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
 
           .rating-stars {
             display: flex;
-            gap: 4px;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
           }
 
           .star {

@@ -217,12 +217,13 @@ export const userService = {
     if (error) throw error;
   },
 
-  async updateExitRatings(userId: string, recommendationRating: number, exhibitionRating: number) {
+  async updateExitRatings(userId: string, exhibitionRating: number, mapHelpfulness: number) {
     const { error } = await supabase
       .from('user')
       .update({
-        exit_recommendation_rating: recommendationRating,
-        exit_exhibition_rating: exhibitionRating,
+        exit_recommendation_rating_7: 0,
+        exit_exhibition_rating_7: exhibitionRating,
+        exit_map_helpfulness_7: mapHelpfulness,
         exit_ratings_submitted_at: new Date().toISOString()
       })
       .eq('user_id', userId);
