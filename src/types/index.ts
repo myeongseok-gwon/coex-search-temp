@@ -116,7 +116,7 @@ export interface GpsTracking {
 
 export interface AppState {
   currentUser: User | null;
-  currentPage: 'landing' | 'form' | 'followup' | 'loading' | 'recommendations' | 'detail' | 'map' | 'survey' | 'complete' | 'thankyou';
+  currentPage: 'landing' | 'form' | 'loading' | 'recommendations' | 'detail' | 'map' | 'survey' | 'complete' | 'thankyou';
   recommendations: Recommendation[];
   selectedBooth: Booth | null;
   boothData: Booth[];

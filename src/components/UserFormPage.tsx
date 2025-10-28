@@ -216,7 +216,7 @@ const UserFormPage: React.FC<UserFormPageProps> = ({ onSubmit, onBack, initialDa
 
       <div className="header">
         <h1>사용자 정보 입력</h1>
-        <p>맞춤형 추천을 위해 정보를 입력해주세요</p>
+        <p>사전 설문 조사를 위해 아래 정보를 입력해주세요</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -446,7 +446,7 @@ const UserFormPage: React.FC<UserFormPageProps> = ({ onSubmit, onBack, initialDa
         </div>
 
         <button type="submit" className="btn btn-primary">
-          추천 받기
+          검색
         </button>
       </form>
 

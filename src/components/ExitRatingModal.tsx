@@ -36,33 +36,6 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
         </div>
 
         <div className="rating-sections">
-          {/* 추천 시스템 만족도 */}
-          <div className="rating-section">
-            <h3>추천 시스템이 도움이 되었나요?</h3>
-            <div className="rating-container">
-              <div className="rating-stars">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`star ${star <= recommendationRating ? 'active' : ''}`}
-                    onClick={() => setRecommendationRating(star)}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
-            {recommendationRating > 0 && (
-              <div className="rating-feedback">
-                {recommendationRating === 1 && "전혀 도움 안됨"}
-                {recommendationRating === 2 && "조금 도움됨"}
-                {recommendationRating === 3 && "보통 도움됨"}
-                {recommendationRating === 4 && "도움됨"}
-                {recommendationRating === 5 && "매우 도움됨"}
-              </div>
-            )}
-          </div>
-
           {/* 전시회 만족도 */}
           <div className="rating-section">
             <h3>전시회에 전반적으로 얼마나 만족하셨나요?</h3>

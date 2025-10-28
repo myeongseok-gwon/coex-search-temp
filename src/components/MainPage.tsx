@@ -3,7 +3,7 @@ import { User, Recommendation, Booth } from '../types';
 import BoothSearch from './BoothSearch';
 import BoothRating from './BoothRating';
 import MapPage from './MapPage';
-import { evaluationService, userService } from '../services/supabase';
+import { evaluationService } from '../services/supabase';
 import { hasLongCompanyName } from '../utils/companyName';
 
 interface MainPageProps {
@@ -14,7 +14,7 @@ interface MainPageProps {
   onExit: () => void;
 }
 
-type TabType = 'recommendations' | 'evaluation' | 'map';
+type TabType = 'evaluation' | 'map';
 
 const MainPage: React.FC<MainPageProps> = ({
   user,
@@ -23,13 +23,12 @@ const MainPage: React.FC<MainPageProps> = ({
   onBack,
   onExit
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('recommendations');
+  const [activeTab, setActiveTab] = useState<TabType>('evaluation');
   const [showBoothSearch, setShowBoothSearch] = useState(false);
   const [selectedBoothForRating, setSelectedBoothForRating] = useState<Booth | null>(null);
   const [evaluatedBooths, setEvaluatedBooths] = useState<{booth: Booth, rating: number}[]>([]);
   const [loadingEvaluations, setLoadingEvaluations] = useState(true);
   const [selectedBoothForMap, setSelectedBoothForMap] = useState<Booth | null>(null);
-  const [selectedBoothForModal, setSelectedBoothForModal] = useState<{ booth: Booth, recommendation: Recommendation } | null>(null);
   
   // 사용자가 완료된 상태인지 확인 (퇴장 후 재입장 시 평가 추가 방지)
   const isUserCompleted = user.exit_ratings_submitted_at;
@@ -51,14 +50,6 @@ const MainPage: React.FC<MainPageProps> = ({
     handleUserInteraction();
   };
 
-  // 부스 정보 정리 함수들
-  const cleanProducts = (products: string | null): string => {
-    if (!products) return '';
-    // 쉼표나 슬래시로 분리하여 첫 번째 항목만 가져오기
-    const firstProduct = products.split(/[,/]/)[0].trim();
-    // 첫 번째 항목이 있으면 "등" 추가
-    return firstProduct ? `${firstProduct} 등` : '';
-  };
 
   // 사용자 상호작용 시 GPS 전송
   const handleUserInteraction = async () => {
@@ -170,80 +161,9 @@ const MainPage: React.FC<MainPageProps> = ({
     }
   };
 
-  // 추천 부스 모달 열기 핸들러
-  const handleRecommendationCardClick = async (booth: Booth, recommendation: Recommendation) => {
-    try {
-      // 추천 모달 클릭 횟수 증가 (부스별로 추적)
-      await userService.incrementRecommendationModalClicks(user.user_id, booth.id);
-      // 모달 열기
-      setSelectedBoothForModal({ booth, recommendation });
-    } catch (error) {
-      console.error('❌ 추천 모달 클릭 횟수 증가 실패:', error);
-      // 실패해도 모달은 열기
-      setSelectedBoothForModal({ booth, recommendation });
-    }
-  };
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'recommendations':
-        // 디버깅: 추천 데이터 확인
-        console.log('📊 추천 탭 렌더링:', {
-          recommendationsCount: recommendations.length,
-          userId: user.user_id,
-          isUserCompleted,
-          recommendations: recommendations.slice(0, 3)
-        });
-        
-        return (
-          <div className="tab-content">
-            {isUserCompleted && (
-              <div className="recommendations-header">
-                <div className="recommendations-info">
-                  <h2>📋 이전에 받은 추천</h2>
-                  <p>이전에 받았던 부스 추천을 확인하실 수 있습니다.</p>
-                </div>
-              </div>
-            )}
-            {recommendations.length > 0 ? (
-              <div className="recommendations-grid">
-                {recommendations.map((rec) => {
-                  const booth = boothData.find(b => b.id === rec.id);
-                  if (!booth) return null;
-
-                  return (
-                    <div 
-                      key={rec.id} 
-                      className="recommendation-card"
-                      onClick={() => handleRecommendationCardClick(booth, rec)}
-                    >
-                      <div className={`card-company-name ${hasLongCompanyName(booth.company_name_kor) ? 'long-name' : ''}`}>{booth.company_name_kor}</div>
-                      {cleanProducts(booth.products) && (
-                        <div className="card-products">{cleanProducts(booth.products)}</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="no-recommendations">
-                <h3>추천 결과가 없습니다</h3>
-                {isUserCompleted ? (
-                  <p>이전에 받았던 추천 데이터를 찾을 수 없습니다. 시스템 관리자에게 문의해주세요.</p>
-                ) : (
-                  <p>아직 추천을 받지 못했습니다. 잠시 후 다시 시도해주세요.</p>
-                )}
-                <button 
-                  className="btn btn-primary"
-                  onClick={onBack}
-                >
-                  {isUserCompleted ? '돌아가기' : '다시 시작하기'}
-                </button>
-              </div>
-            )}
-          </div>
-        );
-
       case 'evaluation':
         return (
           <div className="tab-content">
@@ -331,15 +251,6 @@ const MainPage: React.FC<MainPageProps> = ({
 
       {/* 탭 네비게이션 */}
       <div className="tab-navigation">
-        <button
-          className={`tab-button ${activeTab === 'recommendations' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('recommendations');
-            handleUserInteraction();
-          }}
-        >
-          추천
-        </button>
         <button 
           className={`tab-button ${activeTab === 'evaluation' ? 'active' : ''}`}
           onClick={() => {
@@ -822,174 +733,7 @@ const MainPage: React.FC<MainPageProps> = ({
           color: #333;
         }
 
-
-        .recommendations-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
-          padding: 0;
-        }
-
-        .recommendation-card {
-          background: white;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 16px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .recommendation-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          border-color: #1976d2;
-        }
-
-        .card-company-name {
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: #1976d2;
-          margin-bottom: 6px;
-        }
-
-        .card-company-name.long-name {
-          font-size: 0.8rem;
-        }
-
-        .booth-header h4.long-name {
-          font-size: 0.9rem;
-        }
-
-        .modal-title.long-name {
-          font-size: 1.1rem;
-        }
-
-        .card-products {
-          font-size: 0.85rem;
-          color: #666;
-          line-height: 1.4;
-        }
-
-        /* 모달 스타일 */
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 20px;
-        }
-
-        .modal-content {
-          background: white;
-          border-radius: 12px;
-          padding: 24px;
-          max-width: 500px;
-          width: 100%;
-          max-height: 80vh;
-          overflow-y: auto;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 20px;
-          gap: 16px;
-        }
-
-        .modal-title {
-          font-size: 1.3rem;
-          font-weight: 700;
-          color: #1976d2;
-          margin: 0;
-        }
-
-        .modal-close {
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          cursor: pointer;
-          color: #666;
-          padding: 0;
-          line-height: 1;
-        }
-
-        .modal-close:hover {
-          color: #000;
-        }
-
-        .modal-rationale {
-          background: #f5f5f5;
-          padding: 16px;
-          border-radius: 8px;
-          margin-bottom: 20px;
-          font-size: 0.9rem;
-          line-height: 1.6;
-          color: #333;
-        }
-
-        .modal-products {
-          font-size: 0.9rem;
-          color: #666;
-          margin-bottom: 20px;
-          padding-bottom: 20px;
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        .modal-actions {
-          display: flex;
-          gap: 12px;
-        }
-
-        .modal-actions button {
-          flex: 1;
-        }
-
       `}</style>
-
-      {/* 모달 */}
-      {selectedBoothForModal && (
-        <div className="modal-overlay" onClick={() => setSelectedBoothForModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className={`modal-title ${hasLongCompanyName(selectedBoothForModal.booth.company_name_kor) ? 'long-name' : ''}`}>{selectedBoothForModal.booth.company_name_kor}</h2>
-              <button className="modal-close" onClick={() => setSelectedBoothForModal(null)}>×</button>
-            </div>
-            <div className="modal-rationale">
-              <strong>추천 사유</strong>
-              <p>{selectedBoothForModal.recommendation.rationale}</p>
-            </div>
-            <div className="modal-products">
-              <strong>제품:</strong> {cleanProducts(selectedBoothForModal.booth.products) || '정보 없음'}
-            </div>
-            <div className="modal-actions">
-              <button 
-                className="btn btn-primary"
-                onClick={() => {
-                  setSelectedBoothForModal(null);
-                  handleViewOnMap(selectedBoothForModal.booth);
-                }}
-              >
-                🗺️ 지도에서 보기
-              </button>
-              <button 
-                className="btn btn-secondary"
-                onClick={() => setSelectedBoothForModal(null)}
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
