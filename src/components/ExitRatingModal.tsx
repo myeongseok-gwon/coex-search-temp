@@ -6,18 +6,17 @@ interface ExitRatingModalProps {
 }
 
 const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) => {
-  const [recommendationRating, setRecommendationRating] = useState<number>(0);
   const [exhibitionRating, setExhibitionRating] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (recommendationRating === 0 || exhibitionRating === 0) {
+    if (exhibitionRating === 0) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await onSubmit(recommendationRating, exhibitionRating);
+      await onSubmit(0, exhibitionRating);
     } catch (error) {
       console.error('별점 제출 오류:', error);
     } finally {
@@ -25,7 +24,7 @@ const ExitRatingModal: React.FC<ExitRatingModalProps> = ({ onClose, onSubmit }) 
     }
   };
 
-  const isSubmitEnabled = recommendationRating > 0 && exhibitionRating > 0;
+  const isSubmitEnabled = exhibitionRating > 0;
 
   return (
     <div className="exit-rating-modal-overlay">
