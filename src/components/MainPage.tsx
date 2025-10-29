@@ -237,9 +237,6 @@ const MainPage: React.FC<MainPageProps> = ({
   return (
     <div className="container">
       <div className="top-nav-bar">
-        <div className="nav-left" onClick={onBack}>
-          ← 뒤로가기
-        </div>
         {!isUserCompleted && (
           <div className="nav-right" onClick={onExit}>
             퇴장
@@ -305,7 +302,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
         .top-nav-bar {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-end;
           align-items: center;
           background: #1976d2;
           color: white;
@@ -315,16 +312,6 @@ const MainPage: React.FC<MainPageProps> = ({
           border-radius: 8px;
         }
 
-        .nav-left {
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: opacity 0.2s;
-        }
-
-        .nav-left:hover {
-          opacity: 0.8;
-        }
 
         .nav-right {
           font-size: 16px;
